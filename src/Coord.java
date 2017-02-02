@@ -68,10 +68,13 @@ public class Coord implements Comparable<Coord> {
         return new Coord(x + 1, y);
     }
 
+
+
     /**
-     * TODO
-     *
-     * Returns true iff this Coord is visible on a board of the given size.
+     * Returns true iff this Coord is visible on a board of the given size
+     * by comparing coordinates with boundary of the board.
+     * @param int size
+     * @return boolean
      */
     public boolean onBoard(int size)
     {
@@ -88,33 +91,53 @@ public class Coord implements Comparable<Coord> {
         return true;
     }
 
+
     /**
-     * TODO
-     *
      * Returns a list of the immediate board coordinates of this Coord's north,
      * south, east, and west neighbors.
+     * Only the Coord visible on the board will be added as neightbor; otherwise, add null.
+     * neighbors' sequence
+     * @param int size
+     * @return List<Coord> neighbors
      */
     public List<Coord> neighbors(int size)
     {
         List<Coord> neighbors = new ArrayList<>(4);
+
         if(this.up().onBoard(size))
         {
             neighbors.add(this.up());
+        }
+        else
+        {
+            neighbors.add(null);
         }
 
         if(this.right().onBoard(size))
         {
             neighbors.add(this.right());
         }
+        else
+        {
+            neighbors.add(null);
+        }
 
         if(this.down().onBoard(size))
         {
             neighbors.add(this.down());
         }
+        else
+        {
+            neighbors.add(null);
+        }
 
         if(this.left().onBoard(size))
         {
             neighbors.add(this.left());
+        }
+        else
+        {
+            neighbors.add(null);
         }
 
         return neighbors;
