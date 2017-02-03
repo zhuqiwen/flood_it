@@ -108,36 +108,20 @@ public class Coord implements Comparable<Coord> {
         {
             neighbors.add(this.up());
         }
-        else
-        {
-            neighbors.add(null);
-        }
 
         if(this.right().onBoard(size))
         {
             neighbors.add(this.right());
-        }
-        else
-        {
-            neighbors.add(null);
         }
 
         if(this.down().onBoard(size))
         {
             neighbors.add(this.down());
         }
-        else
-        {
-            neighbors.add(null);
-        }
 
         if(this.left().onBoard(size))
         {
             neighbors.add(this.left());
-        }
-        else
-        {
-            neighbors.add(null);
         }
 
         return neighbors;

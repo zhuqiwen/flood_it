@@ -1,4 +1,6 @@
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * A Board represents the current state of the game. Boards know their dimension,
@@ -10,6 +12,10 @@ import java.util.*;
 
 public class Board {
     private Map<Coord, Tile> inside, outside;
+
+    //use boarder to track tiles that has at least one neighbor in ourside.
+    // boarder is a subset of inside, its size <= inside.size()
+    private Map<Coord, Tile> border;
     private int size;
 
     /**
@@ -21,6 +27,7 @@ public class Board {
         // A tile is either inside or outside the current flooded region.
         inside = new HashMap<>();
         outside = new HashMap<>();
+        border = new HashMap<>();
         this.size = size;
         for (int y = 0; y < size; y++)
             for (int x = 0; x < size; x++) {
@@ -30,6 +37,8 @@ public class Board {
         // Move the corner tile into the flooded region and run flood on its color.
         Tile corner = outside.remove(Coord.ORIGIN);
         inside.put(Coord.ORIGIN, corner);
+        border.put(Coord.ORIGIN, corner);
+
         flood(corner.getColor());
     }
 
@@ -67,24 +76,94 @@ public class Board {
      */
     public void flood(WaterColor color)
     {
-        Iterator kIt = inside.keySet().iterator();
+
+//        this.get(Coord.ORIGIN).setColor(color);
+////
+//        expandInside(this.get(Coord.ORIGIN), color);
+
+//
+
+
+
+        //add edge element in inside to border
+        maintainBorder(color);
+
+        //prepare for iterate over the inside
+        //use a deep copy of inside for the iteration, so that original inside can be change on the fly.
+        Map<Coord, Tile> insideClone = new HashMap<>();
+        insideClone.putAll(inside);
+
+        Iterator kIt = insideClone.keySet().iterator();
+        Tile tile;
 
         while (kIt.hasNext())
         {
-            inside.get(kIt.next()).setColor(color);
+            tile = insideClone.get(kIt.next());
+            tile.setColor(color);
+
+            for(Coord neighborCoord : tile.getCoord().neighbors(this.getSize()))
+            {
+                if(outside.containsKey(neighborCoord))
+                {
+                    if(this.get(neighborCoord).getColor() == color)
+                    {
+                        inside.put(neighborCoord, outside.remove(neighborCoord));
+                        flood(color);
+                    }
+                }
+            }
         }
 
-        expendInside(inside);
     }
 
-    /**
-     * a helper to move tiles from outside into inside
-     * @param inside
-     */
-    public void expendInside(Map<Coord, Tile> inside)
+    private void maintainBorder(WaterColor color)
     {
+        boolean allNeighborInside;
+        for(Coord c: inside.keySet())
+        {
+            allNeighborInside = true;
+            for(Coord neighborC : c.neighbors(this.getSize()))
+            {
+                if(outside.containsKey(neighborC) && this.get(neighborC).getColor() != color)
+                {
+                    border.put(c, this.get(c));
+                    allNeighborInside = false;
+                }
+            }
+            if(allNeighborInside)
+            {
+                border.remove(c,this.get(c));
+            }
+        }
+
+//        System.out.println("inside size: " + inside.size());
+//        System.out.println("border size: " + border.size());
 
     }
+
+//    private void expandInside(Tile currentTitle, WaterColor selectedColor)
+//    {
+//
+//        if(currentTitle.getColor() == this.get(Coord.ORIGIN).getColor())
+//        {
+//            currentTitle.setColor(selectedColor);
+//
+//            for(Coord neighborCoord : currentTitle.getCoord().neighbors(this.getSize()))
+//            {
+//                expandInside(this.get(neighborCoord), selectedColor);
+//            }
+//        }
+//    }
+
+
+
+
+
+
+
+
+
+
 
     /**
      * TODO
@@ -97,15 +176,51 @@ public class Board {
      * flood, including the one above that you eventually settle on, write a comment
      * that describes your algorithm in English. For those implementations that you
      * abandon, state your reasons.
+     **/
 
-     public void flood1(WaterColor color) {
+    /**
+     * This is an attempt to utilize a queue to streamly or non-recursively do the flood.
+     * First, we setup an empty queue, and push the (0,0) into it.
+     * Then, we retrieve the 1st element in the queue, set its color
+     * Next, we check if this element's neighbors has the same color and is contained by outside;
+     *          if so, we move the neighbor from outside to inside;
+     * Last, we push such a neighbor into the queue,
+     *          so that it can be set color and its neighbors can be checked
+     *          if they have same color and are contained by outside
+     * @param WaterColor color
+     */
+     public void flood1(WaterColor color)
+     {
+         Queue<Coord> q = new LinkedList<>();
+         q.offer(Coord.ORIGIN);
+
+         Tile tmpTile;
+         while(!q.isEmpty())
+         {
+             tmpTile = inside.get(q.poll());
+             tmpTile.setColor(color);
+
+             for(Coord neighborCoord : tmpTile.getCoord().neighbors(this.getSize()))
+             {
+                 if(outside.containsKey(neighborCoord))
+                 {
+                     if(this.get(neighborCoord).getColor() == color)
+                     {
+                         inside.put(neighborCoord, outside.remove(neighborCoord));
+                         q.offer(neighborCoord);
+                     }
+                 }
+             }
+         }
+
+
 
      }
 
      public void flood2(WaterColor color) {
 
      }
-     */
+
 
     /**
      * TODO
@@ -116,10 +231,43 @@ public class Board {
      * include maximizing the number of tiles in the current flooded region, or maximizing
      * the size of the perimeter of the current flooded region.
      */
-    public WaterColor suggest() {
-        WaterColor cornerColor = inside.get(Coord.ORIGIN).getColor();
-        return WaterColor.pickOneExcept(cornerColor);
+    public WaterColor suggest()
+    {
+        return soberSuggest();
     }
+
+    private WaterColor soberSuggest()
+    {
+        Iterator bIt = border.keySet().iterator();
+        WaterColor result = WaterColor.pickOne();
+        WaterColor tmp;
+
+        int cnt = 0;
+
+
+        while (bIt.hasNext())
+        {
+            // This could be further improved by using a helper to get a list/array of neighbors' colors
+            List<Coord> neighbors = border.get(bIt.next()).getCoord().neighbors(this.getSize());
+            tmp = this.get(neighbors.get(0)).getColor();
+            if(cnt == 0)
+            {
+                result = tmp;
+                cnt = 1;
+            }
+            else if(result == tmp)
+            {
+                cnt --;
+            }
+            else
+            {
+                cnt ++;
+            }
+        }
+
+        return result;
+    }
+
 
     /**
      * Returns a string representation of this board. Tiles are given as their
