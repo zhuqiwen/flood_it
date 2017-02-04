@@ -191,35 +191,65 @@ public class Board {
      */
      public void flood1(WaterColor color)
      {
+         //add edge element in inside to border
+         maintainBorder(color);
+
+
          Queue<Coord> q = new LinkedList<>();
          q.offer(Coord.ORIGIN);
 
          Tile tmpTile;
+         WaterColor tmpColor = inside.get(Coord.ORIGIN).getColor();
+
+         // when the queue is empty, there is no outside tile of same color as (0, 0)
          while(!q.isEmpty())
          {
+             System.out.println("queue's size: " + q.size());
+             System.out.println("inside size: " + inside.size());
+
              tmpTile = inside.get(q.poll());
+
              tmpTile.setColor(color);
 
+             // loop through current tile's neighbors
              for(Coord neighborCoord : tmpTile.getCoord().neighbors(this.getSize()))
              {
+                 System.out.println("current neighbor: " + neighborCoord.toString());
+
+                 //if a neighbor is in outside and has the same color as inside
                  if(outside.containsKey(neighborCoord))
                  {
-                     if(this.get(neighborCoord).getColor() == color)
+                     System.out.println(neighborCoord.toString() + " is contained in ouside");
+
+                     if(outside.get(neighborCoord).getColor() == color)
                      {
+                         System.out.println(neighborCoord.toString() + " has the same color as (0,0)");
+
+                         // then move this neighbor from outside to inside
                          inside.put(neighborCoord, outside.remove(neighborCoord));
+                         // and push the neighbor into the queue to set its color in next round of while loop.
                          q.offer(neighborCoord);
                      }
                  }
+                 // if the neighbor has the same color as (0, 0), only send it to the queue, no region move
+                 else if(this.get(neighborCoord).getColor() == tmpColor)
+                 {
+                     q.offer(neighborCoord);
+                 }
              }
+
+             System.out.println();
          }
 
 
 
-     }
-
-     public void flood2(WaterColor color) {
 
      }
+
+//
+//     public void flood2(WaterColor color) {
+//
+//     }
 
 
     /**

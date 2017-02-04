@@ -176,7 +176,7 @@ public class Coord implements Comparable<Coord> {
     {
         long bits = java.lang.Double.doubleToLongBits(getX());
         bits ^= java.lang.Double.doubleToLongBits(getY()) * 31;
-        return (((int) bits) ^ ((int) (bits >> 31)));
+        return (((int) bits) ^ ((int) (bits >> 32)));
     }
 
     /**
@@ -212,5 +212,18 @@ public class Coord implements Comparable<Coord> {
         System.out.println("someCoord.onBoard(5) = " + someCoord.onBoard(5));
         System.out.println("neighbors on a 3x3 board = " + someCoord.neighbors(3));
         System.out.println("neighbors on a 6x6 board = " + someCoord.neighbors(6));
+
+        someCoord = new Coord(2,2);
+        System.out.println("neighbors on a 5x5 board = " + someCoord.neighbors(5));
+        System.out.println(someCoord.hashCode());
+
+        someCoord = new Coord(0,5);
+        System.out.println(someCoord.hashCode());
+
+
+        someCoord = new Coord(5,0);
+        System.out.println(someCoord.hashCode());
+
+
     }
 }
