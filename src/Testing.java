@@ -29,7 +29,8 @@ public class Testing {
         assert new Coord(5, 0).hashCode() == 1075052544;
         assert new Coord(2, 2).hashCode() == -2147483648;
 
-
     }
+
+
 
 }

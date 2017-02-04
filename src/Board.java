@@ -68,13 +68,18 @@ public class Board {
         return outside.size() == 0;
     }
 
+
+
     /**
-     * TODO
+     * Iterate over a clone of inside. This is because we are going to update inside region on the fly.
      *
-     * Updates this board by changing the color of the current flood region
-     * and extending its reach.
+     * While iterating, first set each inside tile's color to new color;
+     * then, for all possible neighbors of current tile, test if they are in outside and if their color is the same of new color;
+     * if both true, remove the neighbor from outside to inside.
+     * at last, do the recursion
+     * @param color
      */
-    public void flood(WaterColor color)
+    public void flood1(WaterColor color)
     {
 
 //        this.get(Coord.ORIGIN).setColor(color);
@@ -165,18 +170,7 @@ public class Board {
 
 
 
-    /**
-     * TODO
-     *
-     * Explore a variety of algorithms for handling a flood. Use the same interface
-     * as for flood above, but add an index so your methods are named flood1,
-     * flood2, ..., and so on. Then, use the batchTest() tool in Driver to run game
-     * simulations and then display a graph showing the run times of all your different
-     * flood functions. Do not delete your flood code attempts. For each variety of
-     * flood, including the one above that you eventually settle on, write a comment
-     * that describes your algorithm in English. For those implementations that you
-     * abandon, state your reasons.
-     **/
+
 
     /**
      * This is an attempt to utilize a queue to streamly or non-recursively do the flood.
@@ -189,7 +183,7 @@ public class Board {
      *          if they have same color and are contained by outside
      * @param WaterColor color
      */
-     public void flood1(WaterColor color)
+     public void flood(WaterColor color)
      {
          //add edge element in inside to border
          maintainBorder(color);
@@ -204,8 +198,6 @@ public class Board {
          // when the queue is empty, there is no outside tile of same color as (0, 0)
          while(!q.isEmpty())
          {
-             System.out.println("queue's size: " + q.size());
-             System.out.println("inside size: " + inside.size());
 
              tmpTile = inside.get(q.poll());
 
@@ -214,16 +206,13 @@ public class Board {
              // loop through current tile's neighbors
              for(Coord neighborCoord : tmpTile.getCoord().neighbors(this.getSize()))
              {
-                 System.out.println("current neighbor: " + neighborCoord.toString());
 
                  //if a neighbor is in outside and has the same color as inside
                  if(outside.containsKey(neighborCoord))
                  {
-                     System.out.println(neighborCoord.toString() + " is contained in ouside");
 
                      if(outside.get(neighborCoord).getColor() == color)
                      {
-                         System.out.println(neighborCoord.toString() + " has the same color as (0,0)");
 
                          // then move this neighbor from outside to inside
                          inside.put(neighborCoord, outside.remove(neighborCoord));
@@ -238,7 +227,6 @@ public class Board {
                  }
              }
 
-             System.out.println();
          }
 
 
@@ -266,6 +254,13 @@ public class Board {
         return soberSuggest();
     }
 
+    /**
+     * Iterate over border to retrieve all border elements' neighbors that are in outside;
+     * Then use a simple vote algorithm to decide which color might has the highest score.
+     *
+     *
+     * @return WaterColor
+     */
     private WaterColor soberSuggest()
     {
         Iterator bIt = border.keySet().iterator();
