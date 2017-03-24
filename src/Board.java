@@ -7,7 +7,6 @@ import java.util.List;
  * the collection of tiles that are inside the current flooded region, and those tiles
  * that are on the outside.
  *
- * @author <put your name here>
  */
 
 public class Board {
