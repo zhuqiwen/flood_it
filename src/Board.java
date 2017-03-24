@@ -79,7 +79,7 @@ public class Board {
      * at last, do the recursion
      * @param color
      */
-    public void flood1(WaterColor color)
+    public void flood(WaterColor color)
     {
 
 //        this.get(Coord.ORIGIN).setColor(color);
@@ -183,7 +183,7 @@ public class Board {
      *          if they have same color and are contained by outside
      * @param WaterColor color
      */
-     public void flood(WaterColor color)
+     public void flood1(WaterColor color)
      {
          //add edge element in inside to border
          maintainBorder(color);
